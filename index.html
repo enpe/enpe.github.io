@@ -1,1 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where are you?</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    body {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      color: #f0f0f0;
+      font-family: 'Georgia', serif;
+      overflow: hidden;
+    }
+
+    #city {
+      font-size: clamp(2.5rem, 10vw, 7rem);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    #city.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #status {
+      margin-top: 1.2rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      color: #555;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.4s;
+    }
+
+    #status.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="city"></div>
+  <div id="status"></div>
+
+  <script>
+    const cityEl  = document.getElementById('city');
+    const statusEl = document.getElementById('status');
+
+    function show(city, label) {
+      cityEl.textContent  = city;
+      statusEl.textContent = label || '';
+      requestAnimationFrame(() => {
+        cityEl.classList.add('visible');
+        statusEl.classList.add('visible');
+      });
+    }
+
+    fetch('https://ipwho.is/')
+      .then(r => r.json())
+      .then(d => {
+        if (d.success && d.city) {
+          show(d.city, d.country);
+        } else {
+          show('Unknown', 'location unavailable');
+        }
+      })
+      .catch(() => show('Unknown', 'could not fetch location'));
+  </script>
+</body>
+</html>
