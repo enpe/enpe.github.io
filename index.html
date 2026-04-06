@@ -66,16 +66,35 @@
       });
     }
 
-    fetch('https://ipwho.is/')
-      .then(r => r.json())
-      .then(d => {
-        if (d.success && d.city) {
-          show(d.city, d.country);
-        } else {
-          show('Unknown', 'location unavailable');
-        }
-      })
-      .catch(() => show('Unknown', 'could not fetch location'));
+    async function locate() {
+      const apis = [
+        {
+          url: 'https://ipwho.is/',
+          parse: d => d.success && d.city ? [d.city, d.country] : null,
+        },
+        {
+          url: 'https://ipapi.co/json/',
+          parse: d => !d.error && d.city ? [d.city, d.country_name] : null,
+        },
+        {
+          url: 'https://freeipapi.com/api/json',
+          parse: d => d.cityName ? [d.cityName, d.countryName] : null,
+        },
+      ];
+
+      for (const api of apis) {
+        try {
+          const r = await fetch(api.url);
+          const d = await r.json();
+          const result = api.parse(d);
+          if (result) { show(...result); return; }
+        } catch (_) {}
+      }
+
+      show('Unknown', 'location unavailable');
+    }
+
+    locate();
   </script>
 </body>
 </html>
